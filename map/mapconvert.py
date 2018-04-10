@@ -353,7 +353,7 @@ for scn in sys.argv[1:]:
 	#if hs[0] > 0:
 	#    print name, hs[0]
 	# Reduce xml size by not creating hex elements that only have default values
-	if (terrain != 0 or road != 0 or flag != 0 or hexowner != 0 or hexvictoryowner != -1 or (col,row) in units):
+	if (terrain != 0 or road != 0 or flag != 0 or hexowner != 0 or hexvictoryowner != -1 or deploy != -1 or (col,row) in units):
 	    tmpnode = x.SubElement(xmlmap, "hex")
 	    tmpnode.set("row", str(row))
 	    tmpnode.set("col", str(col))
