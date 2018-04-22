@@ -261,13 +261,14 @@ for scn in sys.argv[1:]:
     maplist.append(mapinfo['mapimg']); # Add the map image to the list of maps needed to be copied to installation
     rows = mapinfo['rows'];
     cols = mapinfo['cols'];
+
     # HACK: Some MAP files come with a "wrong" number of rows and columns, set to 0 or 1.
     #       It seems that this combination, (0,0) or (1,1), is used in those cases when the maximum map size is used.
     #       To circumvent around the problem, we assign the maximum values for number of colums and rows for the script to function properly.
-    if (((rows == 1) and (cols == 1)) or ((rows == 0) and (cols == 0))): 
+    if (((rows == 1) and (cols == 1)) or ((rows == 0) and (cols == 0))):
         rows = 40;
         cols = 45;
-    
+
     scnname = get_scn_name(sf, scntext)
     scndesc = get_scn_description(sf)
     scninfo = get_scn_info(sf)
@@ -360,7 +361,7 @@ for scn in sys.argv[1:]:
 	#if hs[0] > 0:
 	#    print name, hs[0]
 	# Reduce xml size by not creating hex elements that only have default values
-	if (terrain != 0 or road != 0 or flag != 0 or hexowner != 0 or hexvictoryowner != -1 or deploy != -1 or (col,row) in units):
+	if (terrain != 0 or road != 0 or flag != 0 or hexowner != 0 or hexvictoryowner != -1 or deploy != -1 or (col, row) in units):
 	    tmpnode = x.SubElement(xmlmap, "hex")
 	    tmpnode.set("row", str(row))
 	    tmpnode.set("col", str(col))

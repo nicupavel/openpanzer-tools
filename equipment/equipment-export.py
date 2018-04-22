@@ -2,12 +2,17 @@
 #Copyright 2012 Nicu Pavel <npavel@mini-box.com>
 #Licensed under GPLv2
 #import csv
+import os
 import json
 import itertools
+import datetime
 from pprint import pprint
 
 #MAX_ID_TO_EXPORT=3000
 MAX_ID_TO_EXPORT=3959
+
+# Where to output the exported files
+DESTPATH = 'equipment-export-' + datetime.date.today().isoformat()
 
 #As exported by SuitePG2 Report Items ALL Data or Known Data
 # originally exported with id = Code, name = Denomination
@@ -132,18 +137,24 @@ eqcdict = {}
 parsehints = []
 # Unique set with SHP files that will need to be converted (will be used by convert-icons.py script)
 shplist = set()
-#from where the html code will load the images of the units
+# from where the html code will load the images of the units
 imgpath = "resources/units/images/"
 imgext = ".png"
 out = ""
 
 
+
 f = open('EQUIP97_REPORT.csv', 'r' )
 next(f) # skip header
 next(f) # skip entry 0
-o = open('equipment.js', 'w') # file that list each property as a hash, nice but big >300k
-oc = open ('equipment-condensed.js', 'w') # a condensed version that list properties in an array
-shp = open('../icons/shp.list', 'w')
+
+if not os.path.exists(DESTPATH):
+    os.makedirs(DESTPATH)
+
+o = open(os.path.join(DESTPATH, 'equipment.js'), 'w') # file that list each property as a hash, nice but big >300k
+oc = open (os.path.join(DESTPATH,'equipment-condensed.js'), 'w') # a condensed version that list properties in an array
+
+shp = open('../icon-convert/shp.list', 'w') # where to save the SHP(unit icons) used in equipment
 
 #reader = csv.DictReader( f, delimiter=';', fieldnames = keys)
 
@@ -259,7 +270,7 @@ oc.write(jsloader)
 
 #Save equipment in a separate file for each country
 for k in countrydict:
-    fcd = open("equipment-" + k + ".json", "w")
+    fcd = open(os.path.join(DESTPATH, "equipment-" + k + ".json"), "w")
     out = json.dumps(countrydict[k], sort_keys=True, separators=(',',':'), ensure_ascii=False)
     out = out.replace('{', '{\n').replace('}', '}\n').replace('],', '],\n') #TODO compile a regex
     fcd.write(out)
