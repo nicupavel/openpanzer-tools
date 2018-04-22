@@ -296,7 +296,7 @@ class MapConvert:
 
         #xmlmap = x.Element('map', name="" , description="", rows="", cols="" ,image="")
         xmlmap = x.Element('map')
-        xmlmap.set("file", scn)
+        xmlmap.set("file", os.path.basename(scn))
         xmlmap.set("name", scnname)
         xmlmap.set("turns", str(self.get_scn_victory_turns(sf))[1:-1])
         xmlmap.set("date", str(scninfo['date']))
