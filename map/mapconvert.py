@@ -247,7 +247,7 @@ class MapConvert:
         for i in self.scnlist:
             side0 = pprint.pformat(i[3][0])
             side1 = pprint.pformat(i[3][1])
-            scnjs.write('[\"%s\", \"%s\", \"%s\", %s, %s ],\n' % (i[0], i[1], i[2], side0, side1))
+            scnjs.write('[\"%s\", \"%s\", \"%s\", %s, %s ],\n' % (os.path.basename(i[0]), i[1], i[2], side0, side1))
             scnjs.write(']')
 
     def write_unit_xml(self, l, tmpnode):
