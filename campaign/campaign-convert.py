@@ -18,7 +18,7 @@ PRESERVE_CASE = False
 # Should we automatically run scenario conversion (mapconvert.py)
 SCENARIO_CONVERT = True
 
-DESTPATH="/indevel/openpanzer/tools/campaign-export-" + date.today().isoformat()
+DESTPATH="/indevel/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
 KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'camp1.cam', 'camp2.cam', 'camp3.cam', 'camp4.cam', 'camp5.cam']
 KNOWN_CAMPAIGNS_PATH = '/indevel/panzergeneral2/pg2-openpanzer/SCENARIO'
 

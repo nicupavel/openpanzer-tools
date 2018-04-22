@@ -28,12 +28,14 @@ KNOWN_CAMPAIGNS_PATH = '/indevel/panzergeneral2/pg2-openpanzer/SCENARIO'
 
 ```MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO"```
 4. Run ```campaign/campaign-convert.py``` script.
-5. The resulting files should be ```campaign-export-...``` and ```scenario-export-...```. The contents of this folder should be added to ```openpanzer/resources/campaigns``` and ```openpanzer/resources/scenarios```. The contents of ```campaignlist.js``` and ```scenariolist.js``` should be **appended** to the corresponding files in openpanzer/resources files
+5. The resulting files should be ```export-date/campaigns/``` and ```export-date/scenarios/```. 
+The contents of this folder should be added to ```openpanzer/resources/campaigns``` and ```openpanzer/resources/scenarios```. 
+The contents of ```campaignlist.js``` and ```scenariolist.js``` should be **appended** to the corresponding files in openpanzer/resources files
 
 ## Converting Panzer General 2 Standalone Scenarios:
 1. As explained above edit map/mapconvert.py to point to your Panzer General 2 installation
 2. Run the mapconvert.py with a list of scn files to process: For example:
-```./mapconvert.py *.scn``` will convert all the scn files in the current folder and output the results on ```scenario-export-...``` folder
+```./mapconvert.py *.scn``` will convert all the scn files in the current folder and output the results on ```export-date/scenarios/``` folder
 
 
 ## Open Panzer Equipment file

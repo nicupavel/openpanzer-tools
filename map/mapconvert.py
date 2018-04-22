@@ -13,7 +13,7 @@ from datetime import date
 
 
 class MapConvert:
-    DESTPATH_PREFIX = "/indevel/openpanzer/tools/scenario-export-"
+    DESTPATH_PREFIX = "/indevel/openpanzer/tools/export-"
     MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO" # where the .map files for the scenarios reside
     MAP_IMAGE_URL = "resources/maps/images/" # this will be appended into generated javascript file urls
 
@@ -23,7 +23,7 @@ class MapConvert:
         self.destpath = self.create_destpath(MapConvert.DESTPATH_PREFIX)
 
     def create_destpath(self, prefix):
-        destpath = prefix + date.today().isoformat()
+        destpath = prefix + date.today().isoformat() + "/scenarios"
         if not os.path.exists(destpath):
             os.makedirs(destpath)
             os.makedirs(os.path.join(destpath, 'data'))
