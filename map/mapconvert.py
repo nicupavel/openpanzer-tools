@@ -188,7 +188,7 @@ class MapConvert:
                 desc = f.read()
 
         scnfile.seek(pos)
-        nstr = desc.replace("\r\n\r\n","<br>").replace("\r\n","")
+        nstr = desc.replace("\r\n\r\n","<br>").replace("\r\n","").replace("\n", "").replace("\r", "")
         return nstr.replace('"', '\\"')
 
     #Gets scenario info like date, ground/atmosferic conditions etc
@@ -248,7 +248,7 @@ class MapConvert:
             side0 = pprint.pformat(i[3][0])
             side1 = pprint.pformat(i[3][1])
             scnjs.write('[\"%s\", \"%s\", \"%s\", %s, %s ],\n' % (os.path.basename(i[0]), i[1], i[2], side0, side1))
-            scnjs.write(']')
+        scnjs.write(']')
 
     def write_unit_xml(self, l, tmpnode):
         utmpnode = x.SubElement(tmpnode,"unit")
