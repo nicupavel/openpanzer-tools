@@ -27,7 +27,9 @@ KNOWN_CAMPAIGNS_PATH = '/indevel/panzergeneral2/pg2-openpanzer/SCENARIO'
 3. Edit ```map/mapconvert.py``` script and add the location of *.map* files from Panzer General 2 installation:
 
 ```MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO"```
+
 4. Run ```campaign/campaign-convert.py``` script.
+
 5. The resulting files should be ```export-date/campaigns/``` and ```export-date/scenarios/```. 
 The contents of this folder should be added to ```openpanzer/resources/campaigns``` and ```openpanzer/resources/scenarios```. 
 The contents of ```campaignlist.js``` and ```scenariolist.js``` should be **appended** to the corresponding files in openpanzer/resources files
