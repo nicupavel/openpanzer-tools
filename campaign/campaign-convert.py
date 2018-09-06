@@ -18,9 +18,10 @@ PRESERVE_CASE = False
 # Should we automatically run scenario conversion (mapconvert.py)
 SCENARIO_CONVERT = True
 
-DESTPATH="/indevel/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
+#DESTPATH="/indevel/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
+DESTPATH="/Users/panic/Development/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
 KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'camp1.cam', 'camp2.cam', 'camp3.cam', 'camp4.cam', 'camp5.cam']
-KNOWN_CAMPAIGNS_PATH = '/indevel/panzergeneral2/pg2-openpanzer/SCENARIO'
+KNOWN_CAMPAIGNS_PATH = '/Users/panic/Development/pg2-openpanzer/SCENARIO'
 
 
 def create_destpath():
@@ -130,7 +131,12 @@ def parse_campaign_file(file, output_list):
 	for i in range(info['scenarios']):
 		scenario = parse_scenario(folder, cam, i)
 		scenario_list.append(scenario.copy())
-		output_list.append(scenario['scenario'].split('.')[0] + '.scn')
+		scenario_file_name = scenario['scenario'].split('.')[0] + '.scn'
+		scenario_intro_text = scenario['intro']
+		output_list.append({
+		    'scenario': scenario_file_name, 
+		    'intro': scenario_intro_text
+		    })
 	camdata = open(os.path.join(DESTPATH, 'data', info['file']), 'w')
 	out = json.dumps(scenario_list, sort_keys=True, indent=1)
 	camdata.write(out)
@@ -153,14 +159,21 @@ if __name__ == "__main__":
 	for file in [os.path.join(KNOWN_CAMPAIGNS_PATH, cam) for cam in KNOWN_CAMPAIGNS]:
 		parse_campaign_file(file, scn_scenario_list)
 	generate_campaigns_list()
+	
+	# Add the non campaign scenarios
+	scn_scenario_list.append({
+	    'scenario':'tutorial.scn', 
+	    'intro': None}
+	)
 
 	if SCENARIO_CONVERT:
 		sys.path.append('../map/')
 		import mapconvert
 
 		converter = mapconvert.MapConvert()
-		for scnfile in [os.path.join(KNOWN_CAMPAIGNS_PATH, scn) for scn in scn_scenario_list]:
-			converter.parse_scenario_file(scnfile)
+		for scn in scn_scenario_list:
+			scnfile = os.path.join(KNOWN_CAMPAIGNS_PATH, scn['scenario'])
+			converter.parse_scenario_file(scnfile, scn['intro'])
 		converter.generate_scn_js_file()
 
 		print "Maps to copy to openpanzer installation: "

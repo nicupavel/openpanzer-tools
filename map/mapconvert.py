@@ -13,8 +13,10 @@ from datetime import date
 
 
 class MapConvert:
-    DESTPATH_PREFIX = "/indevel/openpanzer/tools/export-"
-    MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO" # where the .map files for the scenarios reside
+    #DESTPATH_PREFIX = "/indevel/openpanzer/tools/export-"
+    #MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO" # where the .map files for the scenarios reside
+    DESTPATH_PREFIX = "/Users/panic/Development/openpanzer/tools/export-"
+    MAP_PATH = "/Users/panic/Development/pg2-openpanzer/SCENARIO"
     MAP_IMAGE_URL = "resources/maps/images/" # this will be appended into generated javascript file urls
 
     def __init__(self):
@@ -172,14 +174,15 @@ class MapConvert:
         descfile = scnfile.read(20).strip('\0').rstrip()
         descfile = os.path.join(MapConvert.MAP_PATH, descfile)
         desc = "No description"
-        #print "\t Opening description file '%s'" % descfile
+        print "\t Opening description file '%s'" % descfile
         try:
             f = self.iopen(descfile, 'r')
         except IOError:
             try:
+                print "\t Opening description file '%s.txt'" % descfile
                 f = self.iopen(descfile + ".txt", 'r')
-            except IOError:
-                print "\t Can't open description file %s" % descfile
+            except IOError as e:
+                print "\t Can't open description file %s: %s" % (descfile, e)
             else:
                 with f:
                     desc = f.read()
@@ -188,6 +191,9 @@ class MapConvert:
                 desc = f.read()
 
         scnfile.seek(pos)
+        return desc
+
+    def format_scn_description(self, desc):
         nstr = desc.replace("\r\n\r\n","<br>").replace("\r\n","").replace("\n", "").replace("\r", "")
         return nstr.replace('"', '\\"')
 
@@ -263,7 +269,7 @@ class MapConvert:
         if (l[8] != 10): utmpnode.set("str", str(l[8])) # original strength
         if (l[9] != 0):  utmpnode.set("ldr", "1") # if unit get a leader or not
 
-    def parse_scenario_file(self, scn):
+    def parse_scenario_file(self, scn, intro_from_campaign = None):
         print "Processing %s" % scn
         # the corresponding scenarion txt name
         tf = self.iopen(os.path.splitext(scn)[0] + ".txt",'r')
@@ -289,7 +295,15 @@ class MapConvert:
             cols = 45
 
         scnname = self.get_scn_name(sf, scntext)
-        scndesc = self.get_scn_description(sf)
+        
+        # The actual scenario intro text file is set in campaign for campaign scenarios.
+        if intro_from_campaign is None or intro_from_campaign == '':
+            scndesc = self.get_scn_description(sf)
+        else:
+            scndesc = intro_from_campaign
+
+        scndesc = self.format_scn_description(scndesc)
+
         scninfo = self.get_scn_info(sf)
         xmlname = os.path.splitext(scn)[0].lower() + ".xml"
         xmlfile = os.path.join(self.destpath, 'data', os.path.basename(xmlname))
