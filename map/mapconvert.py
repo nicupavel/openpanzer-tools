@@ -369,7 +369,7 @@ class MapConvert:
         while True:
             terrain = road = flag = hexowner = 0
             name = ""
-            hexvictoryowner = deploy = -1
+            hexvictoryowner = deploy = hexsupply = -1
 
             try:
                 hm = unpack('HHHc', maphdata[mapoffset:mapoffset + 7])
@@ -383,12 +383,20 @@ class MapConvert:
             hexowner = (hs[0] & 0xe0) >> 5
             if (hs[2] & (1<<1)): hexvictoryowner = 0
             if (hs[2] & (1<<4)): hexvictoryowner = 1
+            
+            # supply hexes
+            supply = hs[1] & 0xf
+            if (supply & (1 << 0)): hexsupply = 0
+            if (supply & (1 << 1)): hexsupply = 1
+            if (supply & (1 << 2)): hexsupply = 2
+            if (supply & (1 << 3)): hexsupply = 3
 
+	    # deployment hexes
             if (hs[3] & (1 << 2)): deploy = 0
             if (hs[3] & (1 << 3)): deploy = 1
             if (hs[3] & (1 << 4)): deploy = 2
             if (hs[3] & (1 << 5)): deploy = 3
-
+            
             textpos = hs[4] - 1  # file index to array index
             if textpos > 0 and textpos < len(scntext):
                 name = scntext[textpos].rstrip()
@@ -408,6 +416,7 @@ class MapConvert:
                 if (hexowner != 0): tmpnode.set("owner", str(hexowner - 1)) #owner starts from 0 in js
                 if (hexvictoryowner != -1): tmpnode.set("victory", str(hexvictoryowner))
                 if (deploy != -1): tmpnode.set("deploy", str(deploy))
+                if (hexsupply != -1): tmpnode.set("supply", str(hexsupply))
                 if (col,row) in units:
                     for l in units[(col,row)]:
                         self.write_unit_xml(l, tmpnode)

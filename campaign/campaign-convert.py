@@ -20,7 +20,7 @@ SCENARIO_CONVERT = True
 
 #DESTPATH="/indevel/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
 DESTPATH="/Users/panic/Development/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
-KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'camp1.cam', 'camp2.cam', 'camp3.cam', 'camp4.cam', 'camp5.cam']
+KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'camp1.cam', 'camp2.cam', 'camp3.cam', 'camp4.cam', 'camp5.cam', 'lssah-it.cam', 'ardennes.cam']
 KNOWN_CAMPAIGNS_PATH = '/Users/panic/Development/pg2-openpanzer/SCENARIO'
 
 

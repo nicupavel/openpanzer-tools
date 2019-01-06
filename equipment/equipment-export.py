@@ -193,9 +193,12 @@ for line in f:
                 odict[k] = unicodestr
                 olist.append(unicodestr)
             elif k == "icon":
-                odict[k] = imgpath + v.lower() + imgext
-                olist.append(imgpath + v.lower() + imgext)
-                shplist.add(v.upper()) #Only add file name without extension since some might be bmp or png
+        	icon_name = v.lower()
+        	if icon_name.startswith("ad"): # To fix issue with adblockers rename adXXX images to zd
+        	    icon_name = "zd" + icon_name[2:]
+                odict[k] = imgpath + icon_name + imgext
+                olist.append(imgpath + icon_name + imgext)
+                shplist.add(icon_name.upper()) #Only add file name without extension since some might be bmp or png
             elif k == "yearavailable" or k == "yearexpired": # PG2 exports only last 2 digits of the year add 1900 to that
 		odict[k] = int(v) + 1900
 		olist.append(int(v) + 1900)
