@@ -269,6 +269,18 @@ class MapConvert:
         if (l[8] != 10): utmpnode.set("str", str(l[8])) # original strength
         if (l[9] != 0):  utmpnode.set("ldr", "1") # if unit get a leader or not
 
+    def check_country_exists(self, country, playersinfo):
+	#print "Checking country: %s" % country
+	for p in playersinfo:
+	    #print "Player country: %s" % p['country']
+	    if p['country'] == country:
+		return True
+	    for sc in p['support']:
+		#print "Support country: %s" % sc
+		if sc == country:
+		    return True
+	return False
+
     def parse_scenario_file(self, scn, intro_from_campaign = None):
         print "Processing %s" % scn
         # the corresponding scenarion txt name
@@ -322,10 +334,13 @@ class MapConvert:
         xmlmap.set("cols", str(cols))
         xmlmap.set("image", MapConvert.MAP_IMAGE_URL + mapinfo['mapimg'])
 
+	# Players data
+	playersinfo = []
         # Player (id, country) for each side. Only used in scenariolist.js
         sideplayers = [ [ ], [ ] ]
         for i in range(4):
             playerinfo = self.get_scn_player_info(sf, i)
+	    playersinfo.append(playerinfo)
             if (playerinfo['country'] != 0):
                 tmpnode = x.SubElement(xmlmap,"player")
                 tmpnode.set("id", str(i))
@@ -362,6 +377,9 @@ class MapConvert:
                 ptmpnode.set("row", str(pos[1]))
                 ptmpnode.set("col", str(pos[0]))
                 for u in reinforce_turns[turn][pos]:
+		    country_exists = self.check_country_exists(u[2], playersinfo)
+		    if not country_exists:
+			print("Warning: Unit: %s country %s doesn't exist in players or supporting countries !" % (u[0], u[2]))
                     self.write_unit_xml(u, ptmpnode)
 
         mapoffset = 0
@@ -374,7 +392,7 @@ class MapConvert:
             try:
                 hm = unpack('HHHc', maphdata[mapoffset:mapoffset + 7])
             except:
-                print "Can't unpack data"
+                print "Can't unpack data at row: %s/%s col: %s/%s" % (row, rows, col, cols)
                 break
 
             hs = unpack('BBBBH', scnhdata[scnoffset:scnoffset + 6])
@@ -411,14 +429,23 @@ class MapConvert:
                 # to reduce xml size further only set attributes if different than a default value
                 if (terrain != 0): tmpnode.set("terrain", str(terrain))
                 if (road != 0): tmpnode.set("road", str(road))
-                if (name != ""): tmpnode.set("name", str(name))
-                if (flag != 0): tmpnode.set("flag", str(flag - 1)) #flags start from 0 in js
+                if (name != "" and name is not None):
+#		    print name
+		    tmpnode.set("name", str(name))
+                if (flag != 0): 
+		    country_exists = self.check_country_exists(flag, playersinfo)
+		    if not country_exists:
+			print("Warning: Country %s doesn't exist in players or supporting countries !" % flag)
+		    tmpnode.set("flag", str(flag - 1)) #flags start from 0 in js
                 if (hexowner != 0): tmpnode.set("owner", str(hexowner - 1)) #owner starts from 0 in js
                 if (hexvictoryowner != -1): tmpnode.set("victory", str(hexvictoryowner))
                 if (deploy != -1): tmpnode.set("deploy", str(deploy))
                 if (hexsupply != -1): tmpnode.set("supply", str(hexsupply))
                 if (col,row) in units:
                     for l in units[(col,row)]:
+			country_exists = self.check_country_exists(l[2], playersinfo)
+			if not country_exists:
+			    print("Warning: Unit: %s country %s doesn't exist in players or supporting countries !" % (l[0], l[2]))
                         self.write_unit_xml(l, tmpnode)
             col = col + 1
             mapoffset = mapoffset + 7

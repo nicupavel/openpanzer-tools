@@ -20,8 +20,13 @@ SCENARIO_CONVERT = True
 
 #DESTPATH="/indevel/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
 DESTPATH="/Users/panic/Development/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
-KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'camp1.cam', 'camp2.cam', 'camp3.cam', 'camp4.cam', 'camp5.cam', 'lssah-it.cam', 'ardennes.cam']
+#KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'camp1.cam', 'camp2.cam', 'camp3.cam', 'camp4.cam', 'camp5.cam', 'lssah-it.cam', 'ardennes.cam', 'campus.cam', 'mussoak.cam', 'campcm4.cam']
+KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'lssah-it.cam', 'ardennes.cam', 'campus.cam', 'mussoak.cam', 'campcm4.cam', 'bc_it.cam']
+#KNOWN_CAMPAIGNS = ['campcm4.cam']
+
+#KNOWN_CAMPAIGNS_PATH = '/indevel/panzergeneral2/pg2-openpanzer/SCENARIO'
 KNOWN_CAMPAIGNS_PATH = '/Users/panic/Development/pg2-openpanzer/SCENARIO'
+
 
 
 def create_destpath():
@@ -76,7 +81,7 @@ def parse_scenario(folder, f, i):
 		with open(os.path.join(folder, introfile), 'r') as intro:
 			scenario['intro'] = ''.join(intro.readlines())
 	except IOError:
-		print "\tWarning: No intro file"
+		print "\tWarning: No intro file (readed from %s in scenario %s)." % (introfile, scenario['scenario'])
 
 	pdata = 88 # start pointer in data list
 	goto_chunk = 4 #where to jump to get scenario goto information
