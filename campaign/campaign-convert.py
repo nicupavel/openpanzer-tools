@@ -18,14 +18,17 @@ PRESERVE_CASE = False
 # Should we automatically run scenario conversion (mapconvert.py)
 SCENARIO_CONVERT = True
 
-#DESTPATH="/indevel/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
-DESTPATH="/Users/panic/Development/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
+DESTPATH="/indevel/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
+#DESTPATH="/Users/panic/Development/openpanzer/tools/export-" + date.today().isoformat() + "/campaigns"
 #KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'camp1.cam', 'camp2.cam', 'camp3.cam', 'camp4.cam', 'camp5.cam', 'lssah-it.cam', 'ardennes.cam', 'campus.cam', 'mussoak.cam', 'campcm4.cam']
-KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'lssah-it.cam', 'ardennes.cam', 'campus.cam', 'mussoak.cam', 'campcm4.cam', 'bc_it.cam']
-#KNOWN_CAMPAIGNS = ['campcm4.cam']
+KNOWN_CAMPAIGNS = ['018.cam', '023.cam', '056.cam', '062d.cam', 'lssah-it.cam', 'ardennes.cam', 'campcm4.cam', 'campus.cam', 'bc_it.cam', 'mussoak.cam', 'dragrom.cam', 'ffl.cam']
+#KNOWN_CAMPAIGNS = ['lssah-it.cam']
+#KNOWN_CAMPAIGNS = ['mussoak.cam']
+#KNOWN_CAMPAIGNS = ['ffl.cam']
+KNOWN_CAMPAIGNS = ['ga3.cam']
 
-#KNOWN_CAMPAIGNS_PATH = '/indevel/panzergeneral2/pg2-openpanzer/SCENARIO'
-KNOWN_CAMPAIGNS_PATH = '/Users/panic/Development/pg2-openpanzer/SCENARIO'
+KNOWN_CAMPAIGNS_PATH = '/indevel/panzergeneral2/pg2-openpanzer/SCENARIO'
+#KNOWN_CAMPAIGNS_PATH = '/Users/panic/Development/pg2-openpanzer/SCENARIO'
 
 
 
@@ -78,10 +81,19 @@ def parse_scenario(folder, f, i):
 	scenario['scenario'] = data[8:28].lower().strip('\0').split('.')[0] + ".xml"
 	introfile = filename_case(data[68:88].strip('\0'))
 	try:
-		with open(os.path.join(folder, introfile), 'r') as intro:
-			scenario['intro'] = ''.join(intro.readlines())
+		intro = open(os.path.join(folder, introfile), 'r')
 	except IOError:
-		print "\tWarning: No intro file (readed from %s in scenario %s)." % (introfile, scenario['scenario'])
+		try:
+			intro = open(os.path.join(folder, introfile + '.txt'), 'r')
+		except IOError:
+		    print "\tWarning: No intro file (readed from %s in scenario %s)." % (introfile, scenario['scenario'])
+
+	try:
+		scenario['intro'] = ''.join(intro.readlines())
+		scenario['intro'] = format_text(scenario['intro'])
+		intro.close()
+	except:
+		pass
 
 	pdata = 88 # start pointer in data list
 	goto_chunk = 4 #where to jump to get scenario goto information
@@ -92,10 +104,20 @@ def parse_scenario(folder, f, i):
 		pdata += 40; #skip SMK and MUS
 		textfile = filename_case(data[pdata:pdata + 20].strip('\0'))
 		try:
-			with open(os.path.join(folder, textfile), 'r') as text:
-				outcome['text'] = ''.join(text.readlines())
+			text = open(os.path.join(folder, textfile), 'r')
 		except IOError:
-			print "\tWarning: No outcome text for %s in scenario %d" % (o, i)
+			try:
+				text = open(os.path.join(folder, textfile + '.txt'), 'r')
+			except IOError:
+				print "\tWarning: No outcome text for %s in scenario %d" % (o, i)
+
+		try:
+			outcome['text'] = ''.join(text.readlines())
+			outcome['text'] = format_text(outcome['text'])
+			text.close()
+		except:
+			pass
+
 		pdata+= 20; #move to the end of the read section
 		pdata+= 20; #skip SMK after TXT
 		goto_pos = 636 - 100 - (24 + 6) * goto_chunk
@@ -146,6 +168,12 @@ def parse_campaign_file(file, output_list):
 	out = json.dumps(scenario_list, sort_keys=True, indent=1)
 	camdata.write(out)
 	camdata.close()
+
+def format_text(desc, utf_decode=True):
+	if utf_decode:
+	    desc = desc.decode('utf-8', 'ignore')
+	nstr = desc.replace("\r\n\r\n","<br><br>").replace("\r\n","<br>").replace("\n", "").replace("\r", "")
+	return nstr.replace('"', '\\"')
 
 # Generates the index .js file with all converted campaigns
 def generate_campaigns_list():

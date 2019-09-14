@@ -13,10 +13,10 @@ from datetime import date
 
 
 class MapConvert:
-    #DESTPATH_PREFIX = "/indevel/openpanzer/tools/export-"
-    #MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO" # where the .map files for the scenarios reside
-    DESTPATH_PREFIX = "/Users/panic/Development/openpanzer/tools/export-"
-    MAP_PATH = "/Users/panic/Development/pg2-openpanzer/SCENARIO"
+    DESTPATH_PREFIX = "/indevel/openpanzer/tools/export-"
+    MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO" # where the .map files for the scenarios reside
+    #DESTPATH_PREFIX = "/Users/panic/Development/openpanzer/tools/export-"
+    #MAP_PATH = "/Users/panic/Development/pg2-openpanzer/SCENARIO"
     MAP_IMAGE_URL = "resources/maps/images/" # this will be appended into generated javascript file urls
 
     def __init__(self):
@@ -95,9 +95,9 @@ class MapConvert:
             transport = unpack('h', u[u_off_transport:u_off_transport + 2])[0]
             carrier = unpack('h', u[u_off_transport + 2:u_off_transport + 4])[0]
             experience = unpack('h', u[u_off_experience:u_off_experience + 2])[0]
-            entrenchment = unpack('b', u[u_off_entrenchment:u_off_entrenchment + 1])[0]
-            reinforce = unpack('b', u[u_off_reinforce:u_off_reinforce + 1])[0]
-            strength = unpack('b', u[u_off_strength:u_off_strength + 1])[0]
+            entrenchment = unpack('B', u[u_off_entrenchment:u_off_entrenchment + 1])[0]
+            reinforce = unpack('B', u[u_off_reinforce:u_off_reinforce + 1])[0]
+            strength = unpack('B', u[u_off_strength:u_off_strength + 1])[0]
             leader = unpack('h', u[u_off_leader:u_off_leader + 2])[0]
             unit_properties = [(uid, owner, flag, face, transport, carrier, experience, entrenchment, strength, leader)]
 
@@ -138,15 +138,15 @@ class MapConvert:
         pos = scnfile.tell()
         scnfile.seek(22+97*pnr)
         data = scnfile.read(97)
-        playerinfo['country'] = unpack('b', data[0])[0]
-        playerinfo['side'] = unpack('b', data[16])[0]
+        playerinfo['country'] = unpack('B', data[0])[0]
+        playerinfo['side'] = unpack('B', data[16])[0]
         # parse supporting countries (max 4)
         sc = []
         for i in range(4):
-            sc.append(unpack('b', data[i + 1])[0])
+            sc.append(unpack('B', data[i + 1])[0])
         playerinfo['support'] = sc;
-        playerinfo['airtrans'] = unpack('b', data[6])[0]
-        playerinfo['navaltrans'] = unpack('b', data[7])[0]
+        playerinfo['airtrans'] = unpack('B', data[6])[0]
+        playerinfo['navaltrans'] = unpack('B', data[7])[0]
 
         # parse player prestige per turn
         tp = []
@@ -206,13 +206,13 @@ class MapConvert:
         scnfile.seek(6)
         data = scnfile.read(16)
 
-        info['atmosferic'] = unpack('b', data[0])[0]
-        info['latitude'] = unpack('b', data[1])[0]
+        info['atmosferic'] = unpack('B', data[0])[0]
+        info['latitude'] = unpack('B', data[1])[0]
         # Date (year, month, day)
         d = date(1900 + unpack('H', data[6:8])[0], unpack('H', data[4:6])[0], unpack('H', data[2:4])[0])
         info['date'] = d.strftime("%B %d, %Y")
-        info['dayturns'] = unpack('b', data[14])[0]
-        info['ground'] = unpack('b', data[15])[0]
+        info['dayturns'] = unpack('B', data[14])[0]
+        info['ground'] = unpack('B', data[15])[0]
 
         scnfile.seek(pos)
         return info
@@ -225,7 +225,7 @@ class MapConvert:
         t = scnfile.read(3)
         turns = []
         for i in range(3):
-            turns.append(unpack('b', t[i : i+1])[0])
+            turns.append(unpack('B', t[i : i+1])[0])
 
         scnfile.seek(pos)
         return turns
@@ -379,7 +379,7 @@ class MapConvert:
                 for u in reinforce_turns[turn][pos]:
 		    country_exists = self.check_country_exists(u[2], playersinfo)
 		    if not country_exists:
-			print("Warning: Unit: %s country %s doesn't exist in players or supporting countries !" % (u[0], u[2]))
+			print("Warning: Unit: %s (%s,%s) country %s doesn't exist in players or supporting countries !" % (u[0], pos[1], pos[0], u[2]))
                     self.write_unit_xml(u, ptmpnode)
 
         mapoffset = 0
@@ -435,17 +435,22 @@ class MapConvert:
                 if (flag != 0): 
 		    country_exists = self.check_country_exists(flag, playersinfo)
 		    if not country_exists:
-			print("Warning: Country %s doesn't exist in players or supporting countries !" % flag)
+			print("Warning: Hex (%s,%s) Country %s doesn't exist in players or supporting countries !" % (row, col, flag))
 		    tmpnode.set("flag", str(flag - 1)) #flags start from 0 in js
                 if (hexowner != 0): tmpnode.set("owner", str(hexowner - 1)) #owner starts from 0 in js
-                if (hexvictoryowner != -1): tmpnode.set("victory", str(hexvictoryowner))
+
+                if (hexvictoryowner != -1): 
+		    tmpnode.set("victory", str(hexvictoryowner))
+		    if flag == 0:
+			print("Warning: Hidden Victory Hex (%s, %s) !" % (row, col))
+
                 if (deploy != -1): tmpnode.set("deploy", str(deploy))
                 if (hexsupply != -1): tmpnode.set("supply", str(hexsupply))
                 if (col,row) in units:
                     for l in units[(col,row)]:
 			country_exists = self.check_country_exists(l[2], playersinfo)
 			if not country_exists:
-			    print("Warning: Unit: %s country %s doesn't exist in players or supporting countries !" % (l[0], l[2]))
+			    print("Warning: Unit: %s (%s,%s) country %s doesn't exist in players or supporting countries !" % (l[0], row, col, l[2]))
                         self.write_unit_xml(l, tmpnode)
             col = col + 1
             mapoffset = mapoffset + 7
