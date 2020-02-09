@@ -6,26 +6,33 @@
 # file specs http://luis-guzman.com/links/PG2_FilesSpec.html#(MAP) file
 
 import os, sys, fnmatch
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 import pprint
 from struct import *
 from lxml import etree as x
 from datetime import date
-
+from config.config import *
 
 class MapConvert:
-    DESTPATH_PREFIX = "/indevel/openpanzer/tools/export-"
-    MAP_PATH = "/indevel/panzergeneral2/pg2-openpanzer/SCENARIO" # where the .map files for the scenarios reside
-    #DESTPATH_PREFIX = "/Users/panic/Development/openpanzer/tools/export-"
-    #MAP_PATH = "/Users/panic/Development/pg2-openpanzer/SCENARIO"
     MAP_IMAGE_URL = "resources/maps/images/" # this will be appended into generated javascript file urls
 
     def __init__(self):
         self.scnlist = []
         self.maplist = []
-        self.destpath = self.create_destpath(MapConvert.DESTPATH_PREFIX)
+        self.destpath = self.create_destpath()
 
-    def create_destpath(self, prefix):
-        destpath = prefix + date.today().isoformat() + "/scenarios"
+    def get_equipment_name(self, path):
+        """ Detects the equipment file used for these scenarios by parsing scenario path """
+        p = os.path.normpath(path)
+        s = p.find('eqp-')
+        e = p.find('/', s)
+
+        return p[s:e]
+
+
+    def create_destpath(self):
+        destpath = os.path.join(DESTPATH, "scenarios")
         if not os.path.exists(destpath):
             os.makedirs(destpath)
             os.makedirs(os.path.join(destpath, 'data'))
@@ -40,12 +47,20 @@ class MapConvert:
             for name in files:
                 if name.lower() == fbasename.lower():
                     return os.path.join(fpath, name)
-        return ""
+        return None
 
     def iopen(self, name, mode):
         real_name = self.get_case_sensitive_file_name(name.strip('\0').rstrip())
-        #print "\t Opening '%s' as '%s'" % (name, real_name)
-        return open(real_name, mode)
+        if real_name is None:
+            print "\t File '%s' not found !" % name
+            raise Exception('File not found')
+
+        try:
+            return open(real_name, mode)
+        except Exception, e:
+            print "\t Fail to open '%s' as '%s'" % (name, real_name)
+            raise
+
 
     # returns a string with all the hexes on the map file
     def get_map_hexes(self, f):
@@ -143,7 +158,10 @@ class MapConvert:
         # parse supporting countries (max 4)
         sc = []
         for i in range(4):
-            sc.append(unpack('B', data[i + 1])[0])
+            country = unpack('B', data[i + 1])[0]
+            if country == 255:
+                country = 0
+            sc.append(country)
         playerinfo['support'] = sc;
         playerinfo['airtrans'] = unpack('B', data[6])[0]
         playerinfo['navaltrans'] = unpack('B', data[7])[0]
@@ -168,19 +186,20 @@ class MapConvert:
         return name
 
     # returns scenario description
-    def get_scn_description(self, scnfile):
+    def get_scn_description(self, dir, scnfile):
         pos = scnfile.tell()
         scnfile.seek(22 + 388 + 10800 + 20)
         descfile = scnfile.read(20).strip('\0').rstrip()
-        descfile = os.path.join(MapConvert.MAP_PATH, descfile)
+        descfile = os.path.join(dir, descfile)
         desc = "No description"
-        print "\t Opening description file '%s'" % descfile
+        #print "\t Opening description file '%s'" % descfile
         try:
             f = self.iopen(descfile, 'r')
-        except IOError:
+        except:
             try:
-                print "\t Opening description file '%s.txt'" % descfile
+                #print "\t Opening description file '%s.txt'" % descfile
                 f = self.iopen(descfile + ".txt", 'r')
+                print "\t Used %s.txt instead.'" % descfile
             except IOError as e:
                 print "\t Can't open description file %s: %s" % (descfile, e)
             else:
@@ -235,8 +254,9 @@ class MapConvert:
         mapinfo = {}
         pos = f.tell()
         f.seek(0)
-        mapimgname = "map_" + str(unpack('h',f.read(2))[0]) + ".png"
-        mapinfo['mapimg'] = mapimgname;
+        mapimgname =  str(unpack('h',f.read(2))[0]) + ".png"
+        mapinfo['mapimg'] = "map_" + mapimgname;
+	mapinfo['mapimg_simple'] = mapimgname;
         mapinfo['cols'] = unpack('h',f.read(2))[0]
         mapinfo['rows'] = unpack('h',f.read(2))[0]
         f.seek(pos)
@@ -282,20 +302,21 @@ class MapConvert:
 	return False
 
     def parse_scenario_file(self, scn, intro_from_campaign = None):
-        print "Processing %s" % scn
+        print "Processing %s" % os.path.basename(scn)
         # the corresponding scenarion txt name
+        dir = os.path.dirname(scn)
         tf = self.iopen(os.path.splitext(scn)[0] + ".txt",'r')
         sf = self.iopen(scn, 'rb')
 
         fmapname = self.get_scn_map_name(sf)
         #print "File name match for: %s is '%s'" % (fmapname, self.get_case_sensitive_file_name(fmapname))
-        mf = self.iopen(os.path.join(MapConvert.MAP_PATH, fmapname), 'rb')
+        mf = self.iopen(os.path.join(dir, fmapname), 'rb')
 
         # contains all names list from the txt file
         scntext = tf.readlines()
 
         mapinfo = self.get_map_info(mf)
-        self.maplist.append(mapinfo['mapimg'])  # Add the map image to the list of maps needed to be copied to installation
+        self.maplist.append(mapinfo['mapimg_simple'])  # Add the map image to the list of maps needed to be copied to installation
         rows = mapinfo['rows']
         cols = mapinfo['cols']
 
@@ -310,7 +331,7 @@ class MapConvert:
         
         # The actual scenario intro text file is set in campaign for campaign scenarios.
         if intro_from_campaign is None or intro_from_campaign == '':
-            scndesc = self.get_scn_description(sf)
+            scndesc = self.get_scn_description(dir, sf)
         else:
             scndesc = intro_from_campaign
 
@@ -332,6 +353,7 @@ class MapConvert:
         xmlmap.set("latitude", str(scninfo['latitude']))
         xmlmap.set("rows", str(rows))
         xmlmap.set("cols", str(cols))
+        xmlmap.set("eqp", self.get_equipment_name(scn))
         xmlmap.set("image", MapConvert.MAP_IMAGE_URL + mapinfo['mapimg'])
 
 	# Players data
@@ -471,6 +493,7 @@ class MapConvert:
 
 if __name__ == "__main__":
     converter = MapConvert()
+
     for file in sys.argv[1:]:
         converter.parse_scenario_file(file)
 
