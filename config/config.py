@@ -24,6 +24,7 @@ KNOWN_CAMPAIGNS = [
     'mussoak.cam',
     'dragrom.cam',
     'ffl.cam',
+    'ga3.cam',
     'camp6sb6.cam',
     'camp6sb7.cam'
 ]

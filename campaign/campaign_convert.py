@@ -136,7 +136,9 @@ def parse_campaign_file(file, output_list):
 	print "Working in %s" % folder
 	print "Processing %s" % campaign
 	info = parse_info(folder, cam)
-	info['file'] = os.path.splitext(campaign)[0].lower() + ".json";
+	info['file'] = os.path.splitext(campaign)[0].lower() + ".json"
+	info['eqp'] = get_equipment_name(folder)
+
 	campaign_list.append(info.copy())
 	# the list of all scenarios in a campaign
 	scenario_list = []
@@ -154,6 +156,15 @@ def parse_campaign_file(file, output_list):
 	out = json.dumps(scenario_list, sort_keys=True, indent=1)
 	camdata.write(out)
 	camdata.close()
+
+
+def get_equipment_name(path):
+	""" Detects the equipment file used for these scenarios by parsing scenario path """
+	p = os.path.normpath(path)
+	s = p.find('eqp-')
+	e = p.find('/', s)
+
+	return p[s:e]
 
 def format_text(desc, utf_decode=True):
 	if utf_decode:

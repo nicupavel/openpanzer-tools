@@ -273,7 +273,7 @@ class MapConvert:
         for i in self.scnlist:
             side0 = pprint.pformat(i[3][0])
             side1 = pprint.pformat(i[3][1])
-            scnjs.write('[\"%s\", \"%s\", \"%s\", %s, %s ],\n' % (os.path.basename(i[0]), i[1], i[2], side0, side1))
+            scnjs.write('[\"%s\", \"%s\", \"%s\", %s, %s, \"%s\" ],\n' % (os.path.basename(i[0]), i[1], i[2], side0, side1, i[4]))
         scnjs.write(']')
 
     def write_unit_xml(self, l, tmpnode):
@@ -336,7 +336,7 @@ class MapConvert:
             scndesc = intro_from_campaign
 
         scndesc = self.format_scn_description(scndesc)
-
+        scneqp = self.get_equipment_name(scn)
         scninfo = self.get_scn_info(sf)
         xmlname = os.path.splitext(scn)[0].lower() + ".xml"
         xmlfile = os.path.join(self.destpath, 'data', os.path.basename(xmlname))
@@ -353,7 +353,7 @@ class MapConvert:
         xmlmap.set("latitude", str(scninfo['latitude']))
         xmlmap.set("rows", str(rows))
         xmlmap.set("cols", str(cols))
-        xmlmap.set("eqp", self.get_equipment_name(scn))
+        xmlmap.set("eqp", scneqp)
         xmlmap.set("image", MapConvert.MAP_IMAGE_URL + mapinfo['mapimg'])
 
 	# Players data
@@ -379,7 +379,7 @@ class MapConvert:
                 sideplayers[playerinfo['side']].append(tmpdict)
 
         # Add to scenariolist.js list
-        self.scnlist.append((xmlname, scnname, scndesc, sideplayers))
+        self.scnlist.append((xmlname, scnname, scndesc, sideplayers, scneqp))
 
         col = row = 0
         # maps always define 45x40 hexes x 7 bytes first 2 being terrain and road
