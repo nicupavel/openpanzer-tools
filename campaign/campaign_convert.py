@@ -220,7 +220,7 @@ if __name__ == "__main__":
 
 		print "Maps to copy to openpanzer installation: "
 		for m in converter.maplist:
-			print "%s " % m,
+			print "map_%s " % m,
 		
 	else:
 		print "Scenarios to convert with mapconvert.py: "

@@ -41,7 +41,7 @@ PG2_ASSETS_PATH = '/indevel/panzergeneral2/pg2-panzermarshal/panzermarshal/'
 
 You can comment out campaigns that you don't want to be processed.
 
-3. Run ```campaign/campaign_convert.py``` script.
+3. Run ```campaign/campaign_convert.py``` script *using python 2.7*.
 
 4. The resulting files should be ```export-date/campaigns/``` and ```export-date/scenarios/```. 
 The contents of this folder should be added to ```openpanzer/resources/campaigns``` and ```openpanzer/resources/scenarios```. 

@@ -16,6 +16,7 @@ from config.config import *
 
 class MapConvert:
     MAP_IMAGE_URL = "resources/maps/images/" # this will be appended into generated javascript file urls
+    MAP_DATA_COMMON_PATH = os.path.join(PG2_ASSETS_PATH, "maps") # Look for .map files in this folder if not found in campaign folder
 
     def __init__(self):
         self.scnlist = []
@@ -49,16 +50,16 @@ class MapConvert:
                     return os.path.join(fpath, name)
         return None
 
-    def iopen(self, name, mode):
+    def iopen(self, name, mode, log_output = True):
         real_name = self.get_case_sensitive_file_name(name.strip('\0').rstrip())
         if real_name is None:
-            print "\t File '%s' not found !" % name
+            if log_output: print "\t File '%s' not found !" % name
             raise Exception('File not found')
 
         try:
             return open(real_name, mode)
         except Exception, e:
-            print "\t Fail to open '%s' as '%s'" % (name, real_name)
+            if log_output: print "\t Fail to open '%s' as '%s'" % (name, real_name)
             raise
 
 
@@ -255,8 +256,8 @@ class MapConvert:
         pos = f.tell()
         f.seek(0)
         mapimgname =  str(unpack('h',f.read(2))[0]) + ".png"
-        mapinfo['mapimg'] = "map_" + mapimgname;
-	mapinfo['mapimg_simple'] = mapimgname;
+        mapinfo['mapimg'] = "map_" + mapimgname
+        mapinfo['mapimg_simple'] = mapimgname
         mapinfo['cols'] = unpack('h',f.read(2))[0]
         mapinfo['rows'] = unpack('h',f.read(2))[0]
         f.seek(pos)
@@ -310,7 +311,10 @@ class MapConvert:
 
         fmapname = self.get_scn_map_name(sf)
         #print "File name match for: %s is '%s'" % (fmapname, self.get_case_sensitive_file_name(fmapname))
-        mf = self.iopen(os.path.join(dir, fmapname), 'rb')
+        try:
+            mf = self.iopen(os.path.join(dir, fmapname), 'rb', log_output = False)
+        except:
+	    mf = self.iopen(os.path.join(MapConvert.MAP_DATA_COMMON_PATH, fmapname), 'rb')
 
         # contains all names list from the txt file
         scntext = tf.readlines()
